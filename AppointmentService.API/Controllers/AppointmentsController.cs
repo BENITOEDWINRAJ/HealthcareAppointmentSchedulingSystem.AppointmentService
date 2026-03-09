@@ -6,24 +6,26 @@ using AppointmentService.Application.Commands;
 using AppointmentService.Core.Entities;
 using AppointmentService.Core.Repositories;
 using AppointmentService.Application.Handlers;
+using AppointmentService.Application.Handlers.Interfaces;
 using AppointmentService.Application.Queries;
+using Microsoft.EntityFrameworkCore;
 
 namespace AppointmentService.API.Controllers
 {
-    [Authorize]
+   // [Authorize]
     [ApiController]
     [Route("api/appointments")]
     public class AppointmentsController : ControllerBase
     {
-        private readonly GetMyAppointmentsHandler _getHandler;
-        private readonly SearchAppointmentsHandler _searchHandler;
-        private readonly CreateAppointmentHandler _createHandler;
+        private readonly IGetMyAppointmentsHandler _getHandler;
+        private readonly ISearchAppointmentsHandler _searchHandler;
+        private readonly ICreateAppointmentHandler _createHandler;
         private readonly ILogger<AppointmentsController> _logger;
 
         public AppointmentsController(
-            GetMyAppointmentsHandler getHandler,
-            SearchAppointmentsHandler searchHandler,
-            CreateAppointmentHandler createHandler,
+            IGetMyAppointmentsHandler getHandler,
+            ISearchAppointmentsHandler searchHandler,
+            ICreateAppointmentHandler createHandler,
             ILogger<AppointmentsController> logger)
         {
             _getHandler = getHandler;
@@ -113,5 +115,18 @@ namespace AppointmentService.API.Controllers
 
             return Ok(result);*/
         }
+
+       /* [Authorize(Roles = "Doctor")]
+        [HttpPut("{id}/status")]
+        public async Task<IActionResult> UpdateStatus(Guid id, string status)
+        {
+            /*var appointment = await _context.Appointments.FindAsync(id);
+            appointment.Status = status;
+
+            await _context.SaveChangesAsync();
+
+            return Ok();
+
+        }*/
     }
 }

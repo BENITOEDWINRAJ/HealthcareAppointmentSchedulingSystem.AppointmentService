@@ -8,14 +8,15 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using AppointmentService.Application.Handlers.Interfaces;
 namespace AppointmentService.Application.Handlers
 {
-    public class GetMyAppointmentsHandler
+    public class GetMyAppointmentsHandler : IGetMyAppointmentsHandler
     {
         private readonly IAppointmentRepository _repo;
-        private readonly ILogger<CreateAppointmentHandler> _logger;
+        private readonly ILogger<GetMyAppointmentsHandler> _logger;
 
-        public GetMyAppointmentsHandler(IAppointmentRepository repo, ILogger<CreateAppointmentHandler> logger)
+        public GetMyAppointmentsHandler(IAppointmentRepository repo, ILogger<GetMyAppointmentsHandler> logger)
         {
             _repo = repo;
             _logger = logger;
@@ -24,8 +25,9 @@ namespace AppointmentService.Application.Handlers
         public async Task<IEnumerable<Appointment>> Handle(GetMyAppointmentsQuery query)
         {
             _logger.LogInformation("GetMyAppointmentsHandler Hadle method expect PatientId");
-            return await _repo.GetByPatientIdAsync(query.PatientId);
-            
+            return await _repo.GetByPatientIdAsync(query.PatientId);            
         }
+        //public async Task<IEnumerable<Appointment>> Handle(GetMyAppointmentsQuery query, CancellationToken cancellationToken)
+
     }
 }

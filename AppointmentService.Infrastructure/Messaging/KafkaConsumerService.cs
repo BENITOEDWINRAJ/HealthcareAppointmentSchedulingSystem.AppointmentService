@@ -16,7 +16,7 @@ namespace AppointmentService.Infrastructure.Messaging
         {
             var config = new ConsumerConfig
             {
-                BootstrapServers = "localhost:9092",
+                BootstrapServers = "localhost:7001",
                 GroupId = "appointment-group",
                 AutoOffsetReset = AutoOffsetReset.Earliest
             };

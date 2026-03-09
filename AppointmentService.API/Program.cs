@@ -99,6 +99,7 @@ using System.Text;
 using Serilog;
 using AppointmentService.Application.Handlers;
 using AppointmentService.Infrastructure.Messaging;
+using AppointmentService.Application.Handlers.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -127,13 +128,17 @@ builder.Services.AddDbContext<AppointmentDbContext>(options =>
 
 // Dependency Injection
 builder.Services.AddScoped<IAppointmentRepository, AppointmentRepository>();
-builder.Services.AddScoped<CreateAppointmentHandler>();
-builder.Services.AddScoped<GetMyAppointmentsHandler>();
-builder.Services.AddScoped<SearchAppointmentsHandler>();
+builder.Services.AddScoped<IGetMyAppointmentsHandler, GetMyAppointmentsHandler>();
+builder.Services.AddScoped<ICreateAppointmentHandler, CreateAppointmentHandler>();
+builder.Services.AddScoped<ISearchAppointmentsHandler, SearchAppointmentsHandler>();
 builder.Services.AddHostedService<KafkaConsumerService>();
 // JWT Authentication
 var key = configuration["Jwt:Key"];
-
+if (string.IsNullOrEmpty(key))
+{
+    throw new Exception("JWT Key is missing in configuration");
+}
+//var key = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1laWRlbnRpZmllciI6IjE5NDNmNjc1LTNlZGQtNDZlNC1iNTNkLTRiYjI5NTViNTZlNyIsImh0dHA6Ly9zY2hlbWFzLm1pY3Jvc29mdC5jb20vd3MvMjAwOC8wNi9pZGVudGl0eS9jbGFpbXMvcm9sZSI6ImRvY3RvciIsImV4cCI6MTc3Mjk4Njc4OH0.Y1q3b8pQ-diyG2VxkK5sQywSdJimDxtTEgkO_nK9iBs";
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {

@@ -1,4 +1,5 @@
-﻿using AppointmentService.Application.Queries;
+﻿using AppointmentService.Application.Handlers.Interfaces;
+using AppointmentService.Application.Queries;
 using AppointmentService.Core.Entities;
 using AppointmentService.Core.Repositories;
 using System;
@@ -9,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace AppointmentService.Application.Handlers
 {
-    public class SearchAppointmentsHandler
+    public class SearchAppointmentsHandler : ISearchAppointmentsHandler
     {
         private readonly IAppointmentRepository _repo;
 

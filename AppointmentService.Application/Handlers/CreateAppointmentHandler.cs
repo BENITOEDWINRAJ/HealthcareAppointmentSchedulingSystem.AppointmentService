@@ -7,10 +7,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using AppointmentService.Application.Handlers.Interfaces;
 
 namespace AppointmentService.Application.Handlers
 {
-    public class CreateAppointmentHandler
+    public class CreateAppointmentHandler : ICreateAppointmentHandler
     {
         private readonly IAppointmentRepository _repo;
         private readonly ILogger<CreateAppointmentHandler> _logger;
@@ -31,7 +32,8 @@ namespace AppointmentService.Application.Handlers
                 PatientId = command.PatientId,
                 DoctorId = command.DoctorId,
                 StartTime = command.StartTime,
-                EndTime = command.EndTime
+                EndTime = command.EndTime,
+                Status =command.Status
             };
 
             _logger.LogInformation(

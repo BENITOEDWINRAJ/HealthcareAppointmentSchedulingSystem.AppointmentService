@@ -18,6 +18,6 @@ namespace AppointmentService.Core.Entities
 
         public DateTime EndTime { get; set; }
 
-        public string Status { get; set; }
+        public required string Status { get; set; }
     }
 }
