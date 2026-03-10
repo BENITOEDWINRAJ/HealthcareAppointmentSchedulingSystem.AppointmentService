@@ -1,4 +1,4 @@
-/*using AppointmentService.Infrastructure.Data;
+﻿/*using AppointmentService.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.AspNetCore.Authentication.JwtBearer; // Ensure this directive is present
@@ -100,6 +100,9 @@ using Serilog;
 using AppointmentService.Application.Handlers;
 using AppointmentService.Infrastructure.Messaging;
 using AppointmentService.Application.Handlers.Interfaces;
+using AppointmentService.Infrastructure.Services;
+using AppointmentService.Application.Interfaces;
+using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -132,13 +135,21 @@ builder.Services.AddScoped<IGetMyAppointmentsHandler, GetMyAppointmentsHandler>(
 builder.Services.AddScoped<ICreateAppointmentHandler, CreateAppointmentHandler>();
 builder.Services.AddScoped<ISearchAppointmentsHandler, SearchAppointmentsHandler>();
 builder.Services.AddHostedService<KafkaConsumerService>();
+builder.Services.AddHttpClient<IAppointmentApiService, AppointmentApiService>();
+builder.Services.AddScoped<IJwtService, JwtService>();
+builder.Services.AddHttpContextAccessor();
+
+builder.Services.AddHttpClient<IAppointmentApiService,AppointmentApiService>(client =>
+{
+    client.BaseAddress = new Uri("https://localhost:7001"); // PatientService or AppointmentService URL
+});
 // JWT Authentication
 var key = configuration["Jwt:Key"];
 if (string.IsNullOrEmpty(key))
 {
     throw new Exception("JWT Key is missing in configuration");
 }
-//var key = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1laWRlbnRpZmllciI6IjE5NDNmNjc1LTNlZGQtNDZlNC1iNTNkLTRiYjI5NTViNTZlNyIsImh0dHA6Ly9zY2hlbWFzLm1pY3Jvc29mdC5jb20vd3MvMjAwOC8wNi9pZGVudGl0eS9jbGFpbXMvcm9sZSI6ImRvY3RvciIsImV4cCI6MTc3Mjk4Njc4OH0.Y1q3b8pQ-diyG2VxkK5sQywSdJimDxtTEgkO_nK9iBs";
+
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
@@ -161,6 +172,44 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+//
+// 8️⃣ Swagger + JWT Support
+//
+builder.Services.AddEndpointsApiExplorer();
+
+builder.Services.AddSwaggerGen(options =>
+{
+    options.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Title = "AppointmentService API",
+        Version = "v1"
+    });
+
+    options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Description = "Enter JWT token like: Bearer {token}",
+        Name = "Authorization",
+        In = ParameterLocation.Header,
+        Type = SecuritySchemeType.Http,
+        Scheme = "bearer",
+        BearerFormat = "JWT"
+    });
+
+    options.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            new string[] {}
+        }
+    });
+});
 // -------------------------
 // Build App
 // -------------------------

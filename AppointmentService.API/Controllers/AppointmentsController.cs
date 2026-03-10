@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace AppointmentService.API.Controllers
 {
-   // [Authorize]
+    [Authorize]
     [ApiController]
     [Route("api/appointments")]
     public class AppointmentsController : ControllerBase
@@ -21,19 +21,22 @@ namespace AppointmentService.API.Controllers
         private readonly ISearchAppointmentsHandler _searchHandler;
         private readonly ICreateAppointmentHandler _createHandler;
         private readonly ILogger<AppointmentsController> _logger;
+        private readonly IJwtService _jwt;
 
         public AppointmentsController(
             IGetMyAppointmentsHandler getHandler,
             ISearchAppointmentsHandler searchHandler,
             ICreateAppointmentHandler createHandler,
-            ILogger<AppointmentsController> logger)
+            ILogger<AppointmentsController> logger,
+            IJwtService jwt)
         {
             _getHandler = getHandler;
             _searchHandler = searchHandler;
             _createHandler = createHandler;
             _logger = logger;
+            _jwt = jwt;
         }
-
+        [Authorize(Roles = "Patient")]
         [HttpGet]
         public async Task<IActionResult> GetMyAppointments()
         {
@@ -63,6 +66,7 @@ namespace AppointmentService.API.Controllers
             return Ok(appointments);*/
         }
 
+        [Authorize(Roles = "Patient")]
         [HttpPost]
         public async Task<IActionResult> Create(CreateAppointmentCommand command)
         {
@@ -94,6 +98,7 @@ namespace AppointmentService.API.Controllers
             return Ok(appointment.Id);*/
         }
 
+        [Authorize(Roles = "Doctor")]
         [HttpGet("search")]
         public async Task<IActionResult> Search(Guid doctorId, DateTime start, DateTime end)
         {
