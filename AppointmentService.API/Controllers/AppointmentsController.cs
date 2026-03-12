@@ -9,6 +9,8 @@ using AppointmentService.Application.Handlers;
 using AppointmentService.Application.Handlers.Interfaces;
 using AppointmentService.Application.Queries;
 using Microsoft.EntityFrameworkCore;
+using AppointmentService.Infrastructure.Services;
+using AppointmentService.Application.DTOs;
 
 namespace AppointmentService.API.Controllers
 {
@@ -24,6 +26,7 @@ namespace AppointmentService.API.Controllers
         private readonly IUpdateAppointmentHandler _updateHandler;
         private readonly IDeleteAppointmentHandler _deleteHandler;
         private readonly IJwtService _jwt;
+        private readonly PatientServiceClient _patientClient;
 
         public AppointmentsController(
             IGetMyAppointmentsHandler getHandler,
@@ -32,7 +35,8 @@ namespace AppointmentService.API.Controllers
             ILogger<AppointmentsController> logger,
             IUpdateAppointmentHandler updateHandler,
             IDeleteAppointmentHandler deleteHandler,
-            IJwtService jwt)
+            IJwtService jwt,
+            PatientServiceClient patientClient)
         {
             _getHandler = getHandler;
             _searchHandler = searchHandler;
@@ -41,6 +45,7 @@ namespace AppointmentService.API.Controllers
             _updateHandler = updateHandler;
             _deleteHandler = deleteHandler;
             _jwt = jwt;
+            _patientClient = patientClient;
         }
         [Authorize(Roles = "Patient")]
         [HttpGet]
@@ -79,29 +84,7 @@ namespace AppointmentService.API.Controllers
             _logger.LogInformation("Create Handlers process are started");
             var id = await _createHandler.Handle(command);
             _logger.LogInformation("Create Handlers process are end");
-            return Ok(id);
-            /*if (await _repo.HasOverlap(command.DoctorId, command.StartTime, command.EndTime))
-                return BadRequest("Doctor has overlapping appointment");
-
-            var appointment = new Appointment
-            {
-                Id = Guid.NewGuid(),
-                PatientId = command.PatientId,
-                DoctorId = command.DoctorId,
-                StartTime = command.StartTime,
-                EndTime = command.EndTime
-            };
-
-            _logger.LogInformation(
-        "Creating appointment for patient {PatientId} with doctor {DoctorId}",
-        appointment.PatientId,
-        appointment.DoctorId);
-
-            await _repo.AddAsync(appointment);
-
-            _logger.LogInformation("Appointment created successfully");
-
-            return Ok(appointment.Id);*/
+            return Ok(id);            
         }
 
         [Authorize(Roles = "Doctor")]
@@ -119,12 +102,7 @@ namespace AppointmentService.API.Controllers
             var result = await _searchHandler.Handle(query);
             _logger.LogInformation("Search Handlers process are end");
 
-            return Ok(result);
-            /*_logger.LogInformation("starting to the search process");
-            var result = await _repo.SearchAsync(doctorId, start, end);
-            _logger.LogInformation("End to the search process");
-
-            return Ok(result);*/
+            return Ok(result);            
         }
 
         // UPDATE APPOINTMENT
@@ -166,8 +144,15 @@ namespace AppointmentService.API.Controllers
             var result = await _deleteHandler.Handle(id);
 
             return Ok(result);
-        }        
+        }
+        [Authorize(Roles ="Doctor")]
+        [HttpGet("GetAllRegisters")]
+        public async Task<List<UserDto>> GetAllRegisters()
+        {
+            var users = await _patientClient.GetUsers();
 
+            return (users);
+        }
         /* [Authorize(Roles = "Doctor")]
          [HttpPut("{id}/status")]
          public async Task<IActionResult> UpdateStatus(Guid id, string status)
