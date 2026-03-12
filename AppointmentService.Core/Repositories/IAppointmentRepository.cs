@@ -18,5 +18,8 @@ namespace AppointmentService.Core.Repositories
         Task<bool> HasOverlap(Guid doctorId, DateTime start, DateTime end);
 
         Task<List<Appointment>> GetPagedAsync(int page, int size);
+        Task UpdateAsync(Appointment appointment);
+        Task DeleteAsync(Guid id);
+        Task<Appointment> GetByIdAsync(Guid id);
     }
 }

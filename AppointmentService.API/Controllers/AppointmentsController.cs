@@ -21,6 +21,8 @@ namespace AppointmentService.API.Controllers
         private readonly ISearchAppointmentsHandler _searchHandler;
         private readonly ICreateAppointmentHandler _createHandler;
         private readonly ILogger<AppointmentsController> _logger;
+        private readonly IUpdateAppointmentHandler _updateHandler;
+        private readonly IDeleteAppointmentHandler _deleteHandler;
         private readonly IJwtService _jwt;
 
         public AppointmentsController(
@@ -28,12 +30,16 @@ namespace AppointmentService.API.Controllers
             ISearchAppointmentsHandler searchHandler,
             ICreateAppointmentHandler createHandler,
             ILogger<AppointmentsController> logger,
+            IUpdateAppointmentHandler updateHandler,
+            IDeleteAppointmentHandler deleteHandler,
             IJwtService jwt)
         {
             _getHandler = getHandler;
             _searchHandler = searchHandler;
             _createHandler = createHandler;
             _logger = logger;
+            _updateHandler = updateHandler;
+            _deleteHandler = deleteHandler;
             _jwt = jwt;
         }
         [Authorize(Roles = "Patient")]
@@ -121,17 +127,58 @@ namespace AppointmentService.API.Controllers
             return Ok(result);*/
         }
 
-       /* [Authorize(Roles = "Doctor")]
-        [HttpPut("{id}/status")]
-        public async Task<IActionResult> UpdateStatus(Guid id, string status)
+        // UPDATE APPOINTMENT
+        [Authorize(Roles = "Patient")]
+        [HttpPut("{id}")]
+        public async Task<IActionResult> Update(
+    Guid id,
+    [FromBody] UpdateAppointmentCommand command)
         {
-            /*var appointment = await _context.Appointments.FindAsync(id);
-            appointment.Status = status;
+            if (id != command.Id)
+                return BadRequest("Appointment ID mismatch");
 
-            await _context.SaveChangesAsync();
+            try
+            {
+                var result = await _updateHandler.Handle(id,command);
+                return Ok(result); // returns true if successful
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                // Return 400 for known domain errors, or 500 for unexpected
+                return BadRequest(new { message = ex.Message });
+            }
+        }
 
-            return Ok();
+        // DELETE APPOINTMENT
+        [Authorize(Roles = "Patient")]
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> Delete(Guid id)
+        {
+            var command = new DeleteAppointmentCommand
+            {
+                Id = id
+            };
 
-        }*/
+            var result = await _deleteHandler.Handle(id);
+
+            return Ok(result);
+        }        
+
+        /* [Authorize(Roles = "Doctor")]
+         [HttpPut("{id}/status")]
+         public async Task<IActionResult> UpdateStatus(Guid id, string status)
+         {
+             /*var appointment = await _context.Appointments.FindAsync(id);
+             appointment.Status = status;
+
+             await _context.SaveChangesAsync();
+
+             return Ok();
+
+         }*/
     }
 }

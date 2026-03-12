@@ -130,13 +130,15 @@ builder.Services.AddDbContext<AppointmentDbContext>(options =>
     options.UseInMemoryDatabase("AppointmentDb"));
 
 // Dependency Injection
+builder.Services.AddScoped<IJwtService, JwtService>();
 builder.Services.AddScoped<IAppointmentRepository, AppointmentRepository>();
 builder.Services.AddScoped<IGetMyAppointmentsHandler, GetMyAppointmentsHandler>();
 builder.Services.AddScoped<ICreateAppointmentHandler, CreateAppointmentHandler>();
 builder.Services.AddScoped<ISearchAppointmentsHandler, SearchAppointmentsHandler>();
 builder.Services.AddHostedService<KafkaConsumerService>();
 builder.Services.AddHttpClient<IAppointmentApiService, AppointmentApiService>();
-builder.Services.AddScoped<IJwtService, JwtService>();
+builder.Services.AddScoped<IUpdateAppointmentHandler, UpdateAppointmentHandler>();
+builder.Services.AddScoped<IDeleteAppointmentHandler,DeleteAppointmentHandler>();
 builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddHttpClient<IAppointmentApiService,AppointmentApiService>(client =>

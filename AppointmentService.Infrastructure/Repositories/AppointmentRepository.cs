@@ -57,6 +57,31 @@ namespace AppointmentService.Infrastructure.Repositories
                 .Take(size)
                 .ToListAsync();
         }
+
+        public async Task<Appointment> GetByIdAsync(Guid id)
+        {
+            return await _context.Appointments
+                .FirstOrDefaultAsync(a => a.Id == id);
+        }
+
+        public async Task DeleteAsync(Guid id)
+        {
+            var appointment = await _context.Appointments
+                .FirstOrDefaultAsync(a => a.Id == id);
+
+            if (appointment == null)
+                throw new KeyNotFoundException("Appointment not found");
+
+            _context.Appointments.Remove(appointment);
+
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task UpdateAsync(Appointment appointment)
+        {
+            _context.Appointments.Update(appointment);
+            await _context.SaveChangesAsync();
+        }
     }
 }
 
