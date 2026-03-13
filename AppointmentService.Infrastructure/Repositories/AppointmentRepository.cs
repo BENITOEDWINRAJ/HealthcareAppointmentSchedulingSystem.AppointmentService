@@ -35,10 +35,11 @@ namespace AppointmentService.Infrastructure.Repositories
         public async Task<List<Appointment>> SearchAsync(Guid doctorId, DateTime start, DateTime end)
         {
             return await _context.Appointments
-                .Where(a => a.DoctorId == doctorId
-                && a.StartTime >= start
-                && a.EndTime <= end)
-                .ToListAsync();
+            .Where(a => a.DoctorId == doctorId
+            && a.StartTime < end
+            && a.EndTime > start)
+            .OrderBy(a => a.StartTime)
+            .ToListAsync();
         }        
 
         public async Task<bool> HasOverlap(Guid doctorId, DateTime start, DateTime end)

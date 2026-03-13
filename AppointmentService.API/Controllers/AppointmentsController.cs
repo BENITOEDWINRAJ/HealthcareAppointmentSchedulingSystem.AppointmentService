@@ -62,35 +62,48 @@ namespace AppointmentService.API.Controllers
             _logger.LogInformation("GetMyAppointments Handlers process are End");
 
             return Ok(result);
-            /*var patientIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrEmpty(patientIdStr))
-                return Unauthorized("User identifier claim is missing.");
-
-            var patientId = Guid.Parse(patientIdStr);
-
-            _logger.LogInformation("Get appointment detaild for patient");
-
-            var appointments = await _repo.GetByPatientIdAsync(patientId);
-
-            _logger.LogInformation("Collected appointment details successfully");
-
-            return Ok(appointments);*/
+            
         }
 
-        [Authorize(Roles = "Patient")]
+        
         [HttpPost]
-        public async Task<IActionResult> Create(CreateAppointmentCommand command)
+        public async Task<IActionResult> Create([FromBody] CreateAppointmentCommand command)
         {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var username = User.FindFirst(ClaimTypes.Name)?.Value;
+            var role = User.FindFirst(ClaimTypes.Role)?.Value;
             _logger.LogInformation("Create Handlers process are started");
             var id = await _createHandler.Handle(command);
             _logger.LogInformation("Create Handlers process are end");
-            return Ok(id);            
+            return Ok(new
+            {
+                LoggedInUserId = userId,
+                Username = username,
+                Role = role,
+                data = id,
+                Message = "Appointment created successfully"
+            });
         }
 
         [Authorize(Roles = "Doctor")]
         [HttpGet("search")]
-        public async Task<IActionResult> Search(Guid doctorId, DateTime start, DateTime end)
+        public async Task<IActionResult> Search(DateTime start, DateTime end)
         {
+            /*var query = new SearchAppointmentsQuery
+            {
+                DoctorId = doctorId,
+                Start = start,
+                End = end
+            };
+
+            _logger.LogInformation("Search Handlers process are started");
+            var result = await _searchHandler.Handle(query);
+            _logger.LogInformation("Search Handlers process are end");
+
+            return Ok(result);  */
+            var doctorId = Guid.Parse(
+            User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+
             var query = new SearchAppointmentsQuery
             {
                 DoctorId = doctorId,
@@ -102,11 +115,11 @@ namespace AppointmentService.API.Controllers
             var result = await _searchHandler.Handle(query);
             _logger.LogInformation("Search Handlers process are end");
 
-            return Ok(result);            
+            return Ok(result);
         }
 
         // UPDATE APPOINTMENT
-        [Authorize(Roles = "Patient")]
+       // [Authorize(Roles = "Doctor")]
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(
     Guid id,
@@ -118,7 +131,11 @@ namespace AppointmentService.API.Controllers
             try
             {
                 var result = await _updateHandler.Handle(id,command);
-                return Ok(result); // returns true if successful
+                return Ok(new
+                {
+                    Message = "Appointment deleted successfully",
+                    Data = result
+                }); 
             }
             catch (KeyNotFoundException ex)
             {
@@ -132,7 +149,7 @@ namespace AppointmentService.API.Controllers
         }
 
         // DELETE APPOINTMENT
-        [Authorize(Roles = "Patient")]
+       // [Authorize(Roles = "Doctor")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(Guid id)
         {
@@ -143,10 +160,14 @@ namespace AppointmentService.API.Controllers
 
             var result = await _deleteHandler.Handle(id);
 
-            return Ok(result);
+            return Ok(new
+            {
+                Message = "Appointment deleted successfully",
+                Data = result
+            });
         }
         [Authorize(Roles ="Doctor")]
-        [HttpGet("GetAllRegisters")]
+        [HttpGet("AllRegisteredUsers")]
         public async Task<List<UserDto>> GetAllRegisters()
         {
             var users = await _patientClient.GetUsers();

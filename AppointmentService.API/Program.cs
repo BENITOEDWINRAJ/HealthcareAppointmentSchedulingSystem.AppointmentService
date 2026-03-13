@@ -2,28 +2,21 @@
 using AppointmentService.Core.Repositories;
 using AppointmentService.Infrastructure.Repositories;
 using AppointmentService.API.Filters;
-
 using AppointmentService.Application.Handlers;
 using AppointmentService.Application.Handlers.Interfaces;
 using AppointmentService.Application.Interfaces;
-
 using AppointmentService.Infrastructure.Services;
-using AppointmentService.Infrastructure.Messaging;
-
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-
 using Serilog;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 var configuration = builder.Configuration;
 
-//
 // 1️⃣ Logging (Serilog)
-//
 Log.Logger = new LoggerConfiguration()
     .WriteTo.Console()
     .WriteTo.File("logs/appointmentservice-log.txt",
@@ -62,23 +55,26 @@ builder.Services.AddScoped<IJwtService, JwtService>();
 //
 //  HttpClient (PatientService Communication)
 //
-builder.Services.AddHttpClient<PatientServiceClient>(client =>
+/*builder.Services.AddHttpClient<PatientServiceClient>(client =>
 {
     client.BaseAddress = new Uri("https://localhost:7001/");
+});*/
+
+var patientServiceUrl = builder.Configuration["Services:PatientService"];
+
+if (string.IsNullOrEmpty(patientServiceUrl))
+{
+    throw new Exception("PatientService URL missing in configuration.");
+}
+
+builder.Services.AddHttpClient<PatientServiceClient>(client =>
+{
+    client.BaseAddress = new Uri(patientServiceUrl);
 });
 
 builder.Services.AddHttpClient<IAppointmentApiService, AppointmentApiService>();
-
-//
-//  Kafka Consumer
-//
-//builder.Services.AddHostedService<KafkaConsumerService>();
-
-//builder.Services.AddHttpContextAccessor();
-
-//
+builder.Services.AddHttpContextAccessor();
 // JWT Authentication
-//
 var key = configuration["Jwt:Key"];
 
 if (string.IsNullOrEmpty(key))
