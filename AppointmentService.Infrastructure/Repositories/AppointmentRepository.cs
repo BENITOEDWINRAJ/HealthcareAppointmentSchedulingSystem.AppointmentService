@@ -1,7 +1,10 @@
-﻿using AppointmentService.Core.Entities;
+﻿
+using AppointmentService.Application.Queries;
+using AppointmentService.Core.Entities;
 using AppointmentService.Core.Repositories;
 using AppointmentService.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
+using AppointmentService.Core.Common;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -30,17 +33,31 @@ namespace AppointmentService.Infrastructure.Repositories
             return await _context.Appointments
                 .Where(x => x.PatientId == patientId)
                 .ToListAsync();
-        }
+        }    
+         
 
-        public async Task<List<Appointment>> SearchAsync(Guid doctorId, DateTime start, DateTime end)
+        public async Task<PagedResult<Appointment>> SearchAsync(
+            Guid doctorId,
+            DateTime start,
+            DateTime end,
+            int page,
+            int pageSize)
         {
-            return await _context.Appointments
-            .Where(a => a.DoctorId == doctorId
-            && a.StartTime < end
-            && a.EndTime > start)
-            .OrderBy(a => a.StartTime)
-            .ToListAsync();
-        }        
+            var query = _context.Appointments
+                .Where(a => a.DoctorId == doctorId &&
+                            a.StartTime >= start &&
+                            a.EndTime <= end);
+
+            var totalCount = await query.CountAsync();
+
+            var items = await query
+                .OrderBy(a => a.StartTime)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return new PagedResult<Appointment>(items, totalCount, page, pageSize);
+        }
 
         public async Task<bool> HasOverlap(Guid doctorId, DateTime start, DateTime end)
         {

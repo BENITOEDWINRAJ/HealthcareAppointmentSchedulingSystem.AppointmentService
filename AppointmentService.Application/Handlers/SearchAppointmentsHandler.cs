@@ -1,7 +1,10 @@
-﻿using AppointmentService.Application.Handlers.Interfaces;
+﻿
+using AppointmentService.Application.Handlers.Interfaces;
 using AppointmentService.Application.Queries;
 using AppointmentService.Core.Entities;
 using AppointmentService.Core.Repositories;
+using AppointmentService.Core.Common;
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,11 +20,15 @@ namespace AppointmentService.Application.Handlers
         public SearchAppointmentsHandler(IAppointmentRepository repo)
         {
             _repo = repo;
-        }
-
-        public async Task<IEnumerable<Appointment>> Handle(SearchAppointmentsQuery query)
+        }        
+        public async Task<PagedResult<Appointment>> Handle(SearchAppointmentsQuery query)
         {
-            return await _repo.SearchAsync(query.DoctorId, query.Start, query.End);
+            return await _repo.SearchAsync(
+                query.DoctorId,
+                query.Start,
+                query.End,
+                query.Page,
+                query.PageSize);
         }
     }
 }

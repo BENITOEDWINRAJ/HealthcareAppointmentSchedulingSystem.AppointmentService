@@ -86,40 +86,25 @@ namespace AppointmentService.API.Controllers
         }
 
         [Authorize(Roles = "Doctor")]
-        [HttpGet("search")]
-        public async Task<IActionResult> Search(DateTime start, DateTime end)
+        [HttpGet("search")]        
+        public async Task<IActionResult> Search(Guid doctorId,DateTime start,DateTime end,int page = 1,int pageSize = 3)
         {
-            /*var query = new SearchAppointmentsQuery
-            {
-                DoctorId = doctorId,
-                Start = start,
-                End = end
-            };
-
-            _logger.LogInformation("Search Handlers process are started");
-            var result = await _searchHandler.Handle(query);
-            _logger.LogInformation("Search Handlers process are end");
-
-            return Ok(result);  */
-            var doctorId = Guid.Parse(
-            User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
-
             var query = new SearchAppointmentsQuery
             {
                 DoctorId = doctorId,
                 Start = start,
-                End = end
-            };
-
+                End = end,
+                Page = page,
+                PageSize = pageSize
+            };            
             _logger.LogInformation("Search Handlers process are started");
             var result = await _searchHandler.Handle(query);
             _logger.LogInformation("Search Handlers process are end");
 
             return Ok(result);
         }
-
         // UPDATE APPOINTMENT
-       // [Authorize(Roles = "Doctor")]
+        // [Authorize(Roles = "Doctor")]
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(
     Guid id,
@@ -173,18 +158,6 @@ namespace AppointmentService.API.Controllers
             var users = await _patientClient.GetUsers();
 
             return (users);
-        }
-        /* [Authorize(Roles = "Doctor")]
-         [HttpPut("{id}/status")]
-         public async Task<IActionResult> UpdateStatus(Guid id, string status)
-         {
-             /*var appointment = await _context.Appointments.FindAsync(id);
-             appointment.Status = status;
-
-             await _context.SaveChangesAsync();
-
-             return Ok();
-
-         }*/
+        }        
     }
 }

@@ -1,4 +1,7 @@
 ﻿using AppointmentService.Core.Entities;
+using AppointmentService.Core.Common;
+
+using AppointmentService;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,8 +15,8 @@ namespace AppointmentService.Core.Repositories
         Task AddAsync(Appointment appointment);
 
         Task<List<Appointment>> GetByPatientIdAsync(Guid patientId);
-
-        Task<List<Appointment>> SearchAsync(Guid doctorId, DateTime start, DateTime end);
+        
+        Task<PagedResult<Appointment>> SearchAsync(Guid doctorId,DateTime start,DateTime end,int page,int pageSize);        
 
         Task<bool> HasOverlap(Guid doctorId, DateTime start, DateTime end);
 

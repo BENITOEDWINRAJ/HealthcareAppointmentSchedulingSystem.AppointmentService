@@ -1,5 +1,7 @@
 ﻿using AppointmentService.Application.Queries;
+using AppointmentService.Core.Common;
 using AppointmentService.Core.Entities;
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,6 +12,6 @@ namespace AppointmentService.Application.Handlers.Interfaces
 {
     public interface ISearchAppointmentsHandler
     {
-        Task<IEnumerable<Appointment>> Handle(SearchAppointmentsQuery query);
+        Task<PagedResult<Appointment>> Handle(SearchAppointmentsQuery query);
     }
 }
