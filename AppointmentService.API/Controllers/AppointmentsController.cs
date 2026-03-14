@@ -11,6 +11,8 @@ using AppointmentService.Application.Queries;
 using Microsoft.EntityFrameworkCore;
 using AppointmentService.Infrastructure.Services;
 using AppointmentService.Application.DTOs;
+using AppointmentService.Application.Common.Interfaces;
+using System.Data;
 
 namespace AppointmentService.API.Controllers
 {
@@ -26,7 +28,7 @@ namespace AppointmentService.API.Controllers
         private readonly IUpdateAppointmentHandler _updateHandler;
         private readonly IDeleteAppointmentHandler _deleteHandler;
         private readonly IJwtService _jwt;
-        private readonly PatientServiceClient _patientClient;
+        private readonly IPatientServiceClient _patientClient;
 
         public AppointmentsController(
             IGetMyAppointmentsHandler getHandler,
@@ -36,7 +38,7 @@ namespace AppointmentService.API.Controllers
             IUpdateAppointmentHandler updateHandler,
             IDeleteAppointmentHandler deleteHandler,
             IJwtService jwt,
-            PatientServiceClient patientClient)
+            IPatientServiceClient patientClient)
         {
             _getHandler = getHandler;
             _searchHandler = searchHandler;
@@ -47,34 +49,41 @@ namespace AppointmentService.API.Controllers
             _jwt = jwt;
             _patientClient = patientClient;
         }
-        [Authorize(Roles = "Patient")]
+        [Authorize(Roles = "Doctor,Patient")]
         [HttpGet]
-        public async Task<IActionResult> GetMyAppointments()
+        public async Task<IActionResult> GetAppointments()
         {
-            var patientIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var role = User.FindFirst(ClaimTypes.Role)?.Value;
 
-            if (string.IsNullOrEmpty(patientIdStr))
-                return Unauthorized("User identifier claim missing");
+            _logger.LogInformation("Get appointments process started");
 
-            var query = new GetMyAppointmentsQuery(Guid.Parse(patientIdStr));
-            _logger.LogInformation("GetMyAppointments Handlers process are started");
-            var result = await _getHandler.Handle(query);
-            _logger.LogInformation("GetMyAppointments Handlers process are End");
+            var result = await _getHandler.Handle(userId, role);
 
-            return Ok(result);
-            
+            _logger.LogInformation("Get appointments process ended");
+
+            return Ok(new
+            {
+                LoggedInUserId = userId,
+                Role = role,
+                Data = result,
+                Message = "Appointments retrieved successfully"
+            });
         }
 
-        
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] CreateAppointmentCommand command)
         {
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             var username = User.FindFirst(ClaimTypes.Name)?.Value;
             var role = User.FindFirst(ClaimTypes.Role)?.Value;
+
             _logger.LogInformation("Create Handlers process are started");
-            var id = await _createHandler.Handle(command);
+
+            var id = await _createHandler.Handle(command, userId, role);
+
             _logger.LogInformation("Create Handlers process are end");
+
             return Ok(new
             {
                 LoggedInUserId = userId,
@@ -101,14 +110,18 @@ namespace AppointmentService.API.Controllers
             var result = await _searchHandler.Handle(query);
             _logger.LogInformation("Search Handlers process are end");
 
-            return Ok(result);
+            return Ok(new
+            {
+                DoctorId = doctorId,
+                Role = "Doctor",
+                Data = result,
+                Message = "Appointments retrieved successfully for the doctor."
+            });
         }
         // UPDATE APPOINTMENT
         // [Authorize(Roles = "Doctor")]
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update(
-    Guid id,
-    [FromBody] UpdateAppointmentCommand command)
+        public async Task<IActionResult> Update(Guid id,[FromBody] UpdateAppointmentCommand command)
         {
             if (id != command.Id)
                 return BadRequest("Appointment ID mismatch");
@@ -118,7 +131,7 @@ namespace AppointmentService.API.Controllers
                 var result = await _updateHandler.Handle(id,command);
                 return Ok(new
                 {
-                    Message = "Appointment deleted successfully",
+                    Message = "Appointment updated successfully",
                     Data = result
                 }); 
             }

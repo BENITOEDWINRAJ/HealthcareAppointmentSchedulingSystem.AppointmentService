@@ -12,9 +12,7 @@ namespace AppointmentService.Core.Repositories
 {
     public interface IAppointmentRepository
     {
-        Task AddAsync(Appointment appointment);
-
-        Task<List<Appointment>> GetByPatientIdAsync(Guid patientId);
+        Task AddAsync(Appointment appointment);        
         
         Task<PagedResult<Appointment>> SearchAsync(Guid doctorId,DateTime start,DateTime end,int page,int pageSize);        
 
@@ -24,5 +22,9 @@ namespace AppointmentService.Core.Repositories
         Task UpdateAsync(Appointment appointment);
         Task DeleteAsync(Guid id);
         Task<Appointment> GetByIdAsync(Guid id);
+        Task<bool> PatientExists(Guid patientId);
+
+        Task<List<Appointment>> GetAllAppointments();
+        Task<List<Appointment>> GetAppointmentsByPatientId(Guid patientId);
     }
 }

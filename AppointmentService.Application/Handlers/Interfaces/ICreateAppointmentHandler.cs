@@ -9,6 +9,6 @@ namespace AppointmentService.Application.Handlers.Interfaces
 {
     public interface ICreateAppointmentHandler
     {
-        Task<Guid> Handle(CreateAppointmentCommand command);
+        Task<Guid> Handle(CreateAppointmentCommand command, string userId, string role);
     }
 }

@@ -17,5 +17,7 @@ namespace AppointmentService.Application.Commands
         public DateTime EndTime { get; set; }
 
         public required string Status { get; set; }
+        //public string? LoggedInUserId { get; set; }
+        //public string? LoggedInUserRole { get; set; }
     }
 }

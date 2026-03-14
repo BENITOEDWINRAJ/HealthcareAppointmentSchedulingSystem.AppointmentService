@@ -28,13 +28,28 @@ namespace AppointmentService.Infrastructure.Repositories
             await _context.SaveChangesAsync();
         }
 
-        public async Task<List<Appointment>> GetByPatientIdAsync(Guid patientId)
+        //public async Task<List<Appointment>> GetByPatientIdAsync(Guid patientId)
+        //{
+        //    return await _context.Appointments
+        //        .Where(x => x.PatientId == patientId)
+        //        .ToListAsync();
+        //}
+
+        public async Task<List<Appointment>> GetAllAppointments()
         {
             return await _context.Appointments
-                .Where(x => x.PatientId == patientId)
+                .OrderByDescending(a => a.StartTime)
                 .ToListAsync();
-        }    
-         
+        }
+
+        public async Task<List<Appointment>> GetAppointmentsByPatientId(Guid patientId)
+        {
+            return await _context.Appointments
+                .Where(a => a.PatientId == patientId)
+                .OrderByDescending(a => a.StartTime)
+                .ToListAsync();
+        }
+
 
         public async Task<PagedResult<Appointment>> SearchAsync(
             Guid doctorId,
@@ -99,6 +114,11 @@ namespace AppointmentService.Infrastructure.Repositories
         {
             _context.Appointments.Update(appointment);
             await _context.SaveChangesAsync();
+        }
+
+        public async Task<bool> PatientExists(Guid patientId)
+        {
+            return await _context.Appointments.AnyAsync(p => p.Id == patientId);
         }
     }
 }

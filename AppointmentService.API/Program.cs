@@ -12,6 +12,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Serilog;
 using System.Text;
+using AppointmentService.Application.Common.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 var configuration = builder.Configuration;
@@ -52,13 +53,6 @@ builder.Services.AddScoped<IDeleteAppointmentHandler, DeleteAppointmentHandler>(
 
 builder.Services.AddScoped<IJwtService, JwtService>();
 
-//
-//  HttpClient (PatientService Communication)
-//
-/*builder.Services.AddHttpClient<PatientServiceClient>(client =>
-{
-    client.BaseAddress = new Uri("https://localhost:7001/");
-});*/
 
 var patientServiceUrl = builder.Configuration["Services:PatientService"];
 
@@ -67,7 +61,11 @@ if (string.IsNullOrEmpty(patientServiceUrl))
     throw new Exception("PatientService URL missing in configuration.");
 }
 
-builder.Services.AddHttpClient<PatientServiceClient>(client =>
+//builder.Services.AddHttpClient<IPatientServiceClient, PatientServiceClient>(client =>
+//{
+//    client.BaseAddress = new Uri("https://localhost:7001/"); // PatientService URL
+//});
+builder.Services.AddHttpClient<IPatientServiceClient, PatientServiceClient>(client =>
 {
     client.BaseAddress = new Uri(patientServiceUrl);
 });

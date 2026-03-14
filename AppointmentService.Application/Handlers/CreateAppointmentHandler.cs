@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using AppointmentService.Application.Handlers.Interfaces;
+using AppointmentService.Application.Common.Interfaces;
 
 namespace AppointmentService.Application.Handlers
 {
@@ -15,14 +16,34 @@ namespace AppointmentService.Application.Handlers
     {
         private readonly IAppointmentRepository _repo;
         private readonly ILogger<CreateAppointmentHandler> _logger;
-        public CreateAppointmentHandler(IAppointmentRepository repo, ILogger<CreateAppointmentHandler> logger)
+        private readonly IPatientServiceClient _patientServiceClient;
+        public CreateAppointmentHandler(IAppointmentRepository repo, ILogger<CreateAppointmentHandler> logger, IPatientServiceClient patientServiceClient)
         {
             _repo = repo;
             _logger = logger;
+            _patientServiceClient = patientServiceClient;
         }
 
-        public async Task<Guid> Handle(CreateAppointmentCommand command)
+        public async Task<Guid> Handle(CreateAppointmentCommand command, string userId, string role)
         {
+            if (role == "Patient")
+            {
+                if (command.PatientId.ToString() != userId)
+                {
+                    throw new UnauthorizedAccessException(
+                        "Patients can create appointments only for themselves.");
+                }
+            }
+
+            // Validate Patient from PatientService
+            var users = await _patientServiceClient.GetUsers();
+
+            var patientExists = users.Any(u =>
+                u.Id == command.PatientId && u.Role == "Patient");
+
+            if (!patientExists)
+                throw new Exception("Invalid PatientId. Patient does not exist.");
+
             if (command.StartTime >= command.EndTime)
                 throw new ArgumentException("StartTime must be before EndTime");
 
@@ -44,17 +65,9 @@ namespace AppointmentService.Application.Handlers
                 Status = command.Status
             };
 
-            _logger.LogInformation(
-                "Creating appointment for patient {PatientId} with doctor {DoctorId}",
-                appointment.PatientId,
-                appointment.DoctorId);
-
             await _repo.AddAsync(appointment);
 
-            _logger.LogInformation("Appointment created successfully");
-
             return appointment.Id;
-            
         }
     }
 }

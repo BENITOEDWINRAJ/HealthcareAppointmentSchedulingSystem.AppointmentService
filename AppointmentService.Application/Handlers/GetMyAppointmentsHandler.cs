@@ -9,6 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using AppointmentService.Application.Handlers.Interfaces;
+using System.Data;
 namespace AppointmentService.Application.Handlers
 {
     public class GetMyAppointmentsHandler : IGetMyAppointmentsHandler
@@ -22,12 +23,30 @@ namespace AppointmentService.Application.Handlers
             _logger = logger;
         }
 
-        public async Task<IEnumerable<Appointment>> Handle(GetMyAppointmentsQuery query)
+        public async Task<IEnumerable<Appointment>> Handle(string userId, string role)
         {
-            _logger.LogInformation("GetMyAppointmentsHandler Hadle method expect PatientId");
-            return await _repo.GetByPatientIdAsync(query.PatientId);            
-        }
-        //public async Task<IEnumerable<Appointment>> Handle(GetMyAppointmentsQuery query, CancellationToken cancellationToken)
+            if (string.IsNullOrEmpty(role))
+                throw new UnauthorizedAccessException("Invalid token");
 
+            List<Appointment> appointments;
+
+            if (role == "Doctor")
+            {
+                // Doctor can view all appointments
+                appointments = await _repo.GetAllAppointments();
+            }
+            else if (role == "Patient")
+            {
+                // Patient can view only his appointments
+                appointments = await _repo.GetAppointmentsByPatientId(Guid.Parse(userId));
+            }
+            else
+            {
+                throw new UnauthorizedAccessException("Invalid role");
+            }
+
+            return appointments;
+        }
     }
+
 }
