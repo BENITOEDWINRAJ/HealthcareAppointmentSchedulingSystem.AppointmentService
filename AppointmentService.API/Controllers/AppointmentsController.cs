@@ -49,6 +49,7 @@ namespace AppointmentService.API.Controllers
             _jwt = jwt;
             _patientClient = patientClient;
         }
+        // Get appointments for logged in user. if Doctor, get all appointments. if Patient, get only his appointments
         [Authorize(Roles = "Doctor,Patient")]
         [HttpGet]
         public async Task<IActionResult> GetAppointments()
@@ -71,6 +72,7 @@ namespace AppointmentService.API.Controllers
             });
         }
 
+        //Create appointment
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] CreateAppointmentCommand command)
         {
@@ -93,7 +95,7 @@ namespace AppointmentService.API.Controllers
                 Message = "Appointment created successfully"
             });
         }
-
+        // Doctor View all appointments for a specific time range
         [Authorize(Roles = "Doctor")]
         [HttpGet("search")]        
         public async Task<IActionResult> Search(Guid doctorId,DateTime start,DateTime end,int page = 1,int pageSize = 3)
