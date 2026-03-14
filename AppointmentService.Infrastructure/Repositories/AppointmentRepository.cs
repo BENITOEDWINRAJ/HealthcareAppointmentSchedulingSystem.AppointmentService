@@ -26,14 +26,7 @@ namespace AppointmentService.Infrastructure.Repositories
         {
             await _context.Appointments.AddAsync(appointment);
             await _context.SaveChangesAsync();
-        }
-
-        //public async Task<List<Appointment>> GetByPatientIdAsync(Guid patientId)
-        //{
-        //    return await _context.Appointments
-        //        .Where(x => x.PatientId == patientId)
-        //        .ToListAsync();
-        //}
+        }       
 
         public async Task<List<Appointment>> GetAllAppointments()
         {

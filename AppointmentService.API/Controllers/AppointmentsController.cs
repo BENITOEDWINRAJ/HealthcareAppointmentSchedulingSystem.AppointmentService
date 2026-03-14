@@ -119,7 +119,7 @@ namespace AppointmentService.API.Controllers
             });
         }
         // UPDATE APPOINTMENT
-        // [Authorize(Roles = "Doctor")]
+        [Authorize(Roles = "Doctor")]
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(Guid id,[FromBody] UpdateAppointmentCommand command)
         {
@@ -147,7 +147,7 @@ namespace AppointmentService.API.Controllers
         }
 
         // DELETE APPOINTMENT
-       // [Authorize(Roles = "Doctor")]
+        [Authorize(Roles = "Doctor")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(Guid id)
         {
@@ -163,14 +163,6 @@ namespace AppointmentService.API.Controllers
                 Message = "Appointment deleted successfully",
                 Data = result
             });
-        }
-        //[Authorize(Roles ="Doctor")]
-        //[HttpGet("AllRegisteredUsers")]
-        //public async Task<List<UserDto>> GetAllRegisters()
-        //{
-        //    var users = await _patientClient.GetUsers();
-
-        //    return (users);
-        //}        
+        }        
     }
 }
