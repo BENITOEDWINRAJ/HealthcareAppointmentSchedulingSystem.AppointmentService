@@ -164,13 +164,13 @@ namespace AppointmentService.API.Controllers
                 Data = result
             });
         }
-        [Authorize(Roles ="Doctor")]
-        [HttpGet("AllRegisteredUsers")]
-        public async Task<List<UserDto>> GetAllRegisters()
-        {
-            var users = await _patientClient.GetUsers();
+        //[Authorize(Roles ="Doctor")]
+        //[HttpGet("AllRegisteredUsers")]
+        //public async Task<List<UserDto>> GetAllRegisters()
+        //{
+        //    var users = await _patientClient.GetUsers();
 
-            return (users);
-        }        
+        //    return (users);
+        //}        
     }
 }
