@@ -73,6 +73,7 @@ namespace AppointmentService.API.Controllers
         }
 
         //Create appointment
+        // Patient and Doctor can create appointment, but Patient can create only for himself
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] CreateAppointmentCommand command)
         {
@@ -95,7 +96,7 @@ namespace AppointmentService.API.Controllers
                 Message = "Appointment created successfully"
             });
         }
-        // Doctor View all appointments for a specific time range
+        // Doctor View all appointments for a specific time range and can filter by doctorId, start and end time. Pagination is also supported.
         [Authorize(Roles = "Doctor")]
         [HttpGet("search")]        
         public async Task<IActionResult> Search(Guid doctorId,DateTime start,DateTime end,int page = 1,int pageSize = 3)
@@ -121,6 +122,7 @@ namespace AppointmentService.API.Controllers
             });
         }
         // UPDATE APPOINTMENT
+        // Only Doctor can update appointment details. Patient cannot update appointment.
         [Authorize(Roles = "Doctor")]
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(Guid id,[FromBody] UpdateAppointmentCommand command)
@@ -149,6 +151,7 @@ namespace AppointmentService.API.Controllers
         }
 
         // DELETE APPOINTMENT
+        // Only Doctor can delete appointment. Patient cannot delete appointment.
         [Authorize(Roles = "Doctor")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(Guid id)

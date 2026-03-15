@@ -37,6 +37,7 @@ namespace AppointmentService.API.Controllers
             _jwt = jwt;
             _patientClient = patientClient;
         }
+        //  Get all registered users (for Doctor role only)
         [Authorize(Roles = "Doctor")]
         [HttpGet]
         public async Task<IActionResult> GetAllRegisteredUsers()

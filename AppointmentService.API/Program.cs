@@ -17,7 +17,7 @@ using AppointmentService.Application.Common.Interfaces;
 var builder = WebApplication.CreateBuilder(args);
 var configuration = builder.Configuration;
 
-// 1️⃣ Logging (Serilog)
+// 1️ Logging (Serilog)
 Log.Logger = new LoggerConfiguration()
     .WriteTo.Console()
     .WriteTo.File("logs/appointmentservice-log.txt",
@@ -61,10 +61,6 @@ if (string.IsNullOrEmpty(patientServiceUrl))
     throw new Exception("PatientService URL missing in configuration.");
 }
 
-//builder.Services.AddHttpClient<IPatientServiceClient, PatientServiceClient>(client =>
-//{
-//    client.BaseAddress = new Uri("https://localhost:7001/"); // PatientService URL
-//});
 builder.Services.AddHttpClient<IPatientServiceClient, PatientServiceClient>(client =>
 {
     client.BaseAddress = new Uri(patientServiceUrl);
