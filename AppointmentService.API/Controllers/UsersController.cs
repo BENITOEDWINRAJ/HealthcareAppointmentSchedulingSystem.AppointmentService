@@ -38,7 +38,7 @@ namespace AppointmentService.API.Controllers
             _patientClient = patientClient;
         }
         //  Get all registered users (for Doctor role only)
-        [Authorize(Roles = "Doctor")]
+        //[Authorize(Roles = "Doctor")]
         [HttpGet]
         public async Task<IActionResult> GetAllRegisteredUsers()
         {
